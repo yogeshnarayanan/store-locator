@@ -1,8 +1,15 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { dbConnect } from '@/lib/db/connect'
 import { Place } from '@/lib/db/models/place'
+import { dualAuth } from '@/lib/auth/dual-auth'
 
 export async function GET(req: NextRequest) {
+  const authResult = await dualAuth(req)
+  if (!authResult) {
+    return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
+  }
+  const { userId } = authResult
+
   await dbConnect()
   const { searchParams } = new URL(req.url)
   const lat = Number(searchParams.get('lat'))
@@ -24,6 +31,7 @@ export async function GET(req: NextRequest) {
         distanceField: 'distanceMeters',
         spherical: true,
         maxDistance: radiusKm * 1000,
+        query: { userId },
       },
     },
     { $limit: limit },

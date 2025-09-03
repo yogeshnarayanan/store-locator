@@ -1,6 +1,8 @@
 import type { Metadata } from 'next'
 import '@/styles/globals.css'
 import { ToasterProvider } from '@/components/ui/toaster'
+import { ClerkProvider } from '@clerk/nextjs'
+import { Header } from '@/components/ui/header'
 
 export const metadata: Metadata = {
   title: 'Store Locator',
@@ -13,10 +15,15 @@ export default function RootLayout({
   children: React.ReactNode
 }) {
   return (
-    <html lang="en">
-      <body>
-        <ToasterProvider>{children}</ToasterProvider>
-      </body>
-    </html>
+    <ClerkProvider>
+      <html lang="en">
+        <body>
+          <ToasterProvider>
+            <Header />
+            {children}
+          </ToasterProvider>
+        </body>
+      </html>
+    </ClerkProvider>
   )
 }

@@ -6,6 +6,7 @@ import {
   useLoadScript,
   Autocomplete,
 } from '@react-google-maps/api'
+import { SignedIn, SignedOut } from '@clerk/nextjs'
 import { Card, CardContent } from '@/components/ui/card'
 import { Input } from '@/components/ui/input'
 import { Button } from '@/components/ui/button'
@@ -87,7 +88,21 @@ export default function Page() {
   if (!isLoaded) return <div className="p-4">Loading map…</div>
 
   return (
-    <div className="grid md:grid-cols-[360px_1fr] gap-4 p-4">
+    <div className="p-4">
+      <SignedOut>
+        <div className="flex items-center justify-center min-h-[60vh]">
+          <Card className="w-96">
+            <CardContent className="p-6 text-center">
+              <h2 className="text-xl font-semibold mb-2">Welcome to Store Locator</h2>
+              <p className="text-gray-600 mb-4">
+                Sign in to start managing your store locations
+              </p>
+            </CardContent>
+          </Card>
+        </div>
+      </SignedOut>
+      <SignedIn>
+        <div className="grid md:grid-cols-[360px_1fr] gap-4">
       <Card className="h-[80vh]">
         <CardContent className="p-4 space-y-3">
           <div className="space-y-2">
@@ -150,6 +165,8 @@ export default function Page() {
           ))}
         </GoogleMap>
       </div>
+        </div>
+      </SignedIn>
     </div>
   )
 }

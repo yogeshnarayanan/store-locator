@@ -9,6 +9,7 @@ export type PlaceDoc = {
   lat: number
   lng: number
   location: { type: 'Point'; coordinates: [number, number] }
+  userId: string
   createdAt: Date
   updatedAt: Date
 }
@@ -25,6 +26,7 @@ const PlaceSchema = new Schema<PlaceDoc>(
       type: { type: String, enum: ['Point'], required: true, default: 'Point' },
       coordinates: { type: [Number], required: true }, // [lng, lat]
     },
+    userId: { type: String, required: true, index: true },
   },
   { timestamps: true }
 )

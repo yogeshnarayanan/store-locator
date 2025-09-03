@@ -1,11 +1,13 @@
-# Store Locator (Next.js + TypeScript + MongoDB + Google Maps)
+# Store Locator (Next.js + TypeScript + MongoDB + Google Maps + Clerk Auth)
 
-A minimal scaffold with:
+A multi-tenant store locator with:
 
 - Next.js App Router
 - MongoDB via Mongoose (with 2dsphere index)
 - Google Maps + Places Autocomplete
+- Clerk authentication with Google OAuth
 - Simple shadcn-like UI components (button, input, card, toast) styled with Tailwind
+- Multi-tenant architecture (users manage their own places)
 
 ## Quick Start
 
@@ -22,6 +24,8 @@ pnpm i
 ```bash
 MONGODB_URI="mongodb+srv://<user>:<pass>@<cluster>/<db>?retryWrites=true&w=majority"
 NEXT_PUBLIC_GOOGLE_MAPS_API_KEY="<browser_key_restricted>"
+NEXT_PUBLIC_CLERK_PUBLISHABLE_KEY="<clerk_publishable_key>"
+CLERK_SECRET_KEY="<clerk_secret_key>"
 ```
 
 3. **Dev**

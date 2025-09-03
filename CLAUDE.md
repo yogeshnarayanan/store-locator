@@ -1,7 +1,7 @@
 # Store Locator Architecture Documentation
 
 ## Overview
-A Next.js application for store location management with interactive maps, built with TypeScript, MongoDB for geospatial data storage, and Google Maps integration for location services and visualization.
+A multi-tenant Next.js application for store location management with interactive maps, built with TypeScript, MongoDB for geospatial data storage, Google Maps integration, and Clerk authentication with Google OAuth. Each authenticated user manages their own set of places.
 
 ## Development Commands
 
@@ -21,7 +21,8 @@ npm run format:check # Check code formatting
 ```
 
 ### Dependencies Overview
-- **Framework**: Next.js 14.2.12 (App Router)
+- **Framework**: Next.js 15+ (App Router)
+- **Authentication**: Clerk (@clerk/nextjs)
 - **Database**: MongoDB via Mongoose 8.6.3
 - **Maps**: @react-google-maps/api 2.19.3
 - **Validation**: Zod 3.23.8
@@ -33,19 +34,22 @@ npm run format:check # Check code formatting
 ### 1. Next.js App Router Structure
 ```
 app/
-├── layout.tsx              # Root layout with ToasterProvider
+├── layout.tsx              # Root layout with ClerkProvider and Header
 ├── (map)/                  # Route group for main functionality
-│   └── page.tsx           # Main map interface page
-└── api/                   # API routes
+│   └── page.tsx           # Main map interface page (auth-gated)
+├── sign-in/[[...sign-in]]/ # Clerk sign-in pages
+├── sign-up/[[...sign-up]]/ # Clerk sign-up pages
+└── api/                   # API routes (all protected)
     └── places/
-        ├── route.ts       # POST endpoint for creating places
+        ├── route.ts       # POST endpoint for creating user places
         └── near/
-            └── route.ts   # GET endpoint for proximity search
+            └── route.ts   # GET endpoint for user's nearby places
 ```
 
 **Key Patterns:**
-- Uses App Router with route groups `(map)` for organization
-- Server-side API routes handle database operations
+- Uses App Router with route groups `(map)` for organization  
+- Clerk authentication middleware protects all routes except home page
+- Server-side API routes handle database operations with user isolation
 - Client components handle interactive map functionality
 - TypeScript strict mode enabled throughout
 
@@ -72,16 +76,20 @@ const PlaceSchema = new Schema<PlaceDoc>({
     type: { type: String, enum: ['Point'], required: true, default: 'Point' },
     coordinates: { type: [Number], required: true }, // [lng, lat]
   },
+  userId: { type: String, required: true, index: true }, // Multi-tenant isolation
 }, { timestamps: true })
 
-// Critical: 2dsphere index for geospatial queries
-PlaceSchema.index({ location: '2dsphere' })
+// Critical indexes for performance
+PlaceSchema.index({ location: '2dsphere' })  // Geospatial queries
+// userId index created automatically for multi-tenant filtering
 ```
 
 **Schema Design:**
+- **Multi-tenant isolation**: `userId` field links places to authenticated users
 - **Dual coordinate storage**: `lat/lng` fields for easy access + GeoJSON `location` field
 - **GeoJSON Point format**: `coordinates: [longitude, latitude]` (note order!)
 - **2dsphere index**: Enables efficient proximity queries on spherical geometry
+- **User index**: Ensures fast filtering by user for tenant isolation
 - **Automatic timestamps**: `createdAt` and `updatedAt` fields
 
 ### 3. Google Maps API Integration Patterns
@@ -281,7 +289,28 @@ npm run start        # Start production server
 
 ### 4. Environment Configuration
 - Create `.env.local` with required environment variables
+- Set up Clerk application with Google OAuth provider
 - Ensure MongoDB cluster is accessible
 - Verify Google Maps API keys and restrictions
 
-This architecture provides a solid foundation for location-based applications with efficient geospatial queries, modern React patterns, and scalable database design.
+## Authentication & Multi-Tenancy
+
+### Clerk Setup
+```bash
+# Required environment variables
+NEXT_PUBLIC_CLERK_PUBLISHABLE_KEY="<clerk_publishable_key>"
+CLERK_SECRET_KEY="<clerk_secret_key>"
+```
+
+### Authentication Flow
+1. **Middleware protection**: `middleware.ts` protects all routes except home page
+2. **API route security**: All `/api/places/*` endpoints require authentication via `auth()`
+3. **User isolation**: Database queries automatically filter by authenticated user's `userId`
+4. **UI conditional rendering**: Uses `<SignedIn>` and `<SignedOut>` components
+
+### Multi-Tenant Data Isolation
+- **Database level**: All place queries include `{ userId }` filter
+- **API level**: User ID extracted from Clerk session and injected into operations
+- **UI level**: Users only see and can manage their own places
+
+This architecture provides a secure, scalable foundation for multi-tenant location-based applications with efficient geospatial queries, modern authentication, and complete user data isolation.
