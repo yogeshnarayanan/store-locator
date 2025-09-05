@@ -1,5 +1,5 @@
 'use client'
-import { useEffect, useState } from 'react'
+import { useEffect, useState, useRef } from 'react'
 import {
   GoogleMap,
   MarkerF,
@@ -29,6 +29,7 @@ export default function Page() {
     libraries,
   })
   const { toast } = useToast()
+  const mapRef = useRef<google.maps.Map | null>(null)
   const [mapCenter, setMapCenter] = useState({ lat: 12.9716, lng: 77.5946 })
   const [places, setPlaces] = useState<PlaceItem[]>([])
   const [autocomplete, setAutocomplete] =
@@ -42,7 +43,7 @@ export default function Page() {
 
   useEffect(() => {
     if (isLoaded) fetchNear(mapCenter.lat, mapCenter.lng)
-  }, [isLoaded])
+  }, [isLoaded, mapCenter.lat, mapCenter.lng])
 
   async function fetchNear(lat: number, lng: number) {
     const res = await fetch(
@@ -147,15 +148,16 @@ export default function Page() {
           zoom={13}
           center={mapCenter}
           mapContainerStyle={{ height: '100%', width: '100%' }}
-          onDragEnd={e => {
-            // workaround: get center from DOM map instance
-            const g: any = e
-            const center = g?.getCenter?.()
-            if (center) {
-              const lat = center.lat()
-              const lng = center.lng()
-              setMapCenter({ lat, lng })
-              fetchNear(lat, lng)
+          onLoad={map => { mapRef.current = map }}
+          onDragEnd={() => {
+            if (mapRef.current) {
+              const center = mapRef.current.getCenter()
+              if (center) {
+                const lat = center.lat()
+                const lng = center.lng()
+                setMapCenter({ lat, lng })
+                fetchNear(lat, lng)
+              }
             }
           }}
         >

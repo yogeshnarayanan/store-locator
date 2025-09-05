@@ -40,7 +40,7 @@ export function ApiKeyModal({ isOpen, onClose }: ApiKeyModalProps) {
       }
       fetchKeyInfo()
     }
-  }, [isOpen])
+  }, [isOpen, toast])
 
 
   const generateKey = async () => {
