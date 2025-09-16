@@ -17,7 +17,24 @@ export async function POST(req: NextRequest) {
   if (!parsed.success) {
     return NextResponse.json({ error: parsed.error.flatten() }, { status: 400 })
   }
+
+  // ✅ Destructure fields
   const { name, address, city, state, lat, lng } = parsed.data
+
+  // 🔎 Duplicate check by coordinates + user
+  const exists = await Place.findOne({
+    "location.coordinates": [lng, lat],
+    userId,
+  })
+
+  if (exists) {
+    return NextResponse.json(
+      { error: 'This place has already been Added' },
+      { status: 409 } // Conflict
+    )
+  }
+
+  // ✅ Create new place
   const doc = await Place.create({
     name,
     address,
@@ -28,5 +45,6 @@ export async function POST(req: NextRequest) {
     location: { type: 'Point', coordinates: [lng, lat] },
     userId,
   })
+
   return NextResponse.json(doc, { status: 201 })
 }
