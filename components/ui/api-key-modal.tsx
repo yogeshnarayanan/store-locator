@@ -104,27 +104,27 @@ export function ApiKeyModal({ isOpen, onClose }: ApiKeyModalProps) {
 
   return (
     <Modal isOpen={isOpen} onClose={handleClose} title="API Key Management">
-      <div className="space-y-4">
+      <div className="space-y-6">
         {keyInfo.hasKey ? (
-          <div className="space-y-3">
-            <div className="p-3 bg-gray-50 rounded-lg">
-              <div className="text-sm text-gray-600">Current API Key</div>
-              <div className="font-medium">{keyInfo.name}</div>
-              <div className="text-xs text-gray-500 mt-1">
+          <div className="space-y-4">
+            <div className="p-4 bg-gray-50 rounded-lg border border-gray-200 hover:border-blue-300 transition-colors">
+              <div className="text-sm text-gray-500">Current API Key</div>
+              <div className="font-semibold text-gray-800">{keyInfo.name}</div>
+              <div className="text-xs text-gray-400 mt-1">
                 Created: {keyInfo.createdAt ? new Date(keyInfo.createdAt).toLocaleDateString() : 'Unknown'}
                 {keyInfo.lastUsed && (
-                  <span className="ml-2">
+                  <span className="ml-4">
                     Last used: {new Date(keyInfo.lastUsed).toLocaleDateString()}
                   </span>
                 )}
               </div>
             </div>
 
-            <div className="flex space-x-2">
+            <div className="flex space-x-3">
               <Button
                 onClick={generateKey}
                 disabled={loading}
-                className="flex-1"
+                className="flex-1 bg-blue-600 hover:bg-blue-700 text-white"
               >
                 <RefreshCw className="h-4 w-4 mr-2" />
                 Regenerate Key
@@ -133,18 +133,19 @@ export function ApiKeyModal({ isOpen, onClose }: ApiKeyModalProps) {
                 variant="outline"
                 onClick={deleteKey}
                 disabled={loading}
+                className="border-red-400 text-red-500 hover:bg-red-50"
               >
                 <Trash2 className="h-4 w-4" />
               </Button>
             </div>
           </div>
         ) : (
-          <div className="space-y-3">
+          <div className="text-center space-y-4">
             <p className="text-gray-600">You don&apos;t have an API key yet.</p>
             <Button
               onClick={generateKey}
               disabled={loading}
-              className="w-full"
+              className="w-full bg-blue-600 hover:bg-blue-700 text-white"
             >
               Generate API Key
             </Button>
@@ -152,7 +153,7 @@ export function ApiKeyModal({ isOpen, onClose }: ApiKeyModalProps) {
         )}
 
         {newApiKey && (
-          <div className="mt-4 p-4 bg-yellow-50 border border-yellow-200 rounded-lg">
+          <div className="p-4 bg-yellow-50 border border-yellow-200 rounded-lg">
             <div className="text-sm font-medium text-yellow-800 mb-2">
               Your new API key (save this now - it won&apos;t be shown again):
             </div>
@@ -161,12 +162,13 @@ export function ApiKeyModal({ isOpen, onClose }: ApiKeyModalProps) {
                 value={newApiKey}
                 readOnly
                 type={showKey ? 'text' : 'password'}
-                className="font-mono text-sm"
+                className="font-mono text-sm bg-yellow-100 border-yellow-300"
               />
               <Button
                 variant="outline"
                 size="sm"
                 onClick={() => setShowKey(!showKey)}
+                className="hover:bg-yellow-200"
               >
                 {showKey ? <EyeOff className="h-4 w-4" /> : <Eye className="h-4 w-4" />}
               </Button>
@@ -174,6 +176,7 @@ export function ApiKeyModal({ isOpen, onClose }: ApiKeyModalProps) {
                 variant="outline"
                 size="sm"
                 onClick={() => copyToClipboard(newApiKey)}
+                className="hover:bg-yellow-200"
               >
                 <Copy className="h-4 w-4" />
               </Button>
@@ -182,11 +185,14 @@ export function ApiKeyModal({ isOpen, onClose }: ApiKeyModalProps) {
         )}
 
         {keyInfo.hasKey && (
-          <div className="mt-4 p-3 bg-blue-50 border border-blue-200 rounded-lg">
-            <div className="text-sm text-blue-800">
-              <strong>Usage:</strong> Include this header in your API requests:
+          <div className="p-3 bg-blue-50 border border-blue-200 rounded-lg">
+            <div className="text-sm text-blue-800 font-medium">
+              Usage:
             </div>
-            <code className="block mt-1 text-xs bg-blue-100 p-2 rounded">
+            <div className="text-xs text-blue-700 mt-1">
+              Include this header in your API requests:
+            </div>
+            <code className="block mt-2 text-xs bg-blue-100 p-2 rounded font-mono">
               Authorization: Bearer YOUR_API_KEY
             </code>
           </div>
