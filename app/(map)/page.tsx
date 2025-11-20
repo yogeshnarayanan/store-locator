@@ -6,7 +6,7 @@ import {
   useLoadScript,
   Autocomplete,
 } from '@react-google-maps/api'
-import { SignedIn, SignedOut } from '@clerk/nextjs'
+import { SignedIn, SignedOut, useUser } from '@clerk/nextjs'
 import { Card, CardContent } from '@/components/ui/card'
 import { Input } from '@/components/ui/input'
 import { Button } from '@/components/ui/button'
@@ -28,6 +28,7 @@ export default function Page() {
     googleMapsApiKey: process.env.NEXT_PUBLIC_GOOGLE_MAPS_API_KEY!,
     libraries,
   })
+  const { user, isLoaded: isUserLoaded } = useUser()
   const { toast } = useToast()
   const mapRef = useRef<google.maps.Map | null>(null)
   const [mapCenter, setMapCenter] = useState({ lat: 12.9716, lng: 77.5946 })
@@ -42,15 +43,27 @@ export default function Page() {
   } | null>(null)
 
   useEffect(() => {
-    if (isLoaded) fetchNear(mapCenter.lat, mapCenter.lng)
-  }, [isLoaded, mapCenter.lat, mapCenter.lng])
+    if (isLoaded && isUserLoaded && user) {
+      fetchNear(mapCenter.lat, mapCenter.lng)
+    }
+  }, [isLoaded, isUserLoaded, user, mapCenter.lat, mapCenter.lng])
 
   async function fetchNear(lat: number, lng: number) {
     const res = await fetch(
       `/api/places/near?lat=${lat}&lng=${lng}&radiusKm=10&limit=50`
     )
+    if (!res.ok) {
+      console.error('Failed to fetch nearby places:', res.status)
+      setPlaces([])
+      return
+    }
     const data = await res.json()
-    setPlaces(data)
+    if (Array.isArray(data)) {
+      setPlaces(data)
+    } else {
+      console.error('Invalid response format:', data)
+      setPlaces([])
+    }
   }
 
   const onPlaceChanged = () => {
@@ -124,10 +137,10 @@ export default function Page() {
             </div>
           )}
           <div className="text-sm text-gray-500">
-            Showing {places.length} nearby places
+            Showing {Array.isArray(places) ? places.length : 0} nearby places
           </div>
           <div className="space-y-2 max-h-[50vh] overflow-auto pr-2">
-            {places.map(p => (
+            {Array.isArray(places) && places.map(p => (
               <div key={p._id} className="border rounded-md p-2">
                 <div className="font-medium">{p.name}</div>
                 {p.address && (
@@ -162,7 +175,7 @@ export default function Page() {
           }}
         >
           <MarkerF position={mapCenter} />
-          {places.map(p => (
+          {Array.isArray(places) && places.map(p => (
             <MarkerF key={p._id} position={{ lat: p.lat, lng: p.lng }} />
           ))}
         </GoogleMap>
