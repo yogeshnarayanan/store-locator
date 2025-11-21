@@ -11,6 +11,7 @@ import { Card, CardContent } from '@/components/ui/card'
 import { Input } from '@/components/ui/input'
 import { Button } from '@/components/ui/button'
 import { useToast } from '@/components/ui/toaster'
+import { useBrand } from '@/components/providers/brand-provider'
 
 const libraries: 'places'[] = ['places']
 
@@ -29,7 +30,8 @@ export default function Page() {
     libraries,
   })
   const { user, isLoaded: isUserLoaded } = useUser()
-  const { toast } = useToast()
+  const { selectedBrand, isLoading: isBrandLoading } = useBrand()
+  const { push: toast } = useToast()
   const mapRef = useRef<google.maps.Map | null>(null)
   const [mapCenter, setMapCenter] = useState({ lat: 12.9716, lng: 77.5946 })
   const [places, setPlaces] = useState<PlaceItem[]>([])
@@ -43,14 +45,19 @@ export default function Page() {
   } | null>(null)
 
   useEffect(() => {
-    if (isLoaded && isUserLoaded && user) {
+    if (isLoaded && isUserLoaded && user && selectedBrand) {
       fetchNear(mapCenter.lat, mapCenter.lng)
     }
-  }, [isLoaded, isUserLoaded, user, mapCenter.lat, mapCenter.lng])
+  }, [isLoaded, isUserLoaded, user, selectedBrand, mapCenter.lat, mapCenter.lng])
 
   async function fetchNear(lat: number, lng: number) {
+    if (!selectedBrand) {
+      setPlaces([])
+      return
+    }
+
     const res = await fetch(
-      `/api/places/near?lat=${lat}&lng=${lng}&radiusKm=10&limit=50`
+      `/api/brands/${selectedBrand._id}/places/near?lat=${lat}&lng=${lng}&radiusKm=10&limit=50`
     )
     if (!res.ok) {
       console.error('Failed to fetch nearby places:', res.status)
@@ -84,8 +91,9 @@ export default function Page() {
   }
 
   async function addSelected() {
-    if (!selected) return
-    const res = await fetch('/api/places', {
+    if (!selected || !selectedBrand) return
+
+    const res = await fetch(`/api/brands/${selectedBrand._id}/places`, {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify(selected),
@@ -116,6 +124,19 @@ export default function Page() {
         </div>
       </SignedOut>
       <SignedIn>
+        {!isBrandLoading && !selectedBrand && (
+          <div className="flex items-center justify-center min-h-[60vh]">
+            <Card className="w-96">
+              <CardContent className="p-6 text-center">
+                <h2 className="text-xl font-semibold mb-2">No Brand Selected</h2>
+                <p className="text-gray-600 mb-4">
+                  Please create or select a brand from the header to start managing places
+                </p>
+              </CardContent>
+            </Card>
+          </div>
+        )}
+        {selectedBrand && (
         <div className="grid md:grid-cols-[360px_1fr] gap-4">
       <Card className="h-[80vh]">
         <CardContent className="p-4 space-y-3">
@@ -181,6 +202,7 @@ export default function Page() {
         </GoogleMap>
       </div>
         </div>
+        )}
       </SignedIn>
     </div>
   )

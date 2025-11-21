@@ -35,7 +35,7 @@ export function ApiKeyModal({ isOpen, onClose }: ApiKeyModalProps) {
           const data = await response.json()
           setKeyInfo(data)
         } catch (error) {
-          toast.toast({ title: 'Failed to load API key info' })
+          toast.push({ title: 'Failed to load API key info' })
         }
       }
       fetchKeyInfo()
@@ -52,13 +52,13 @@ export function ApiKeyModal({ isOpen, onClose }: ApiKeyModalProps) {
       if (response.ok) {
         setNewApiKey(data.apiKey)
         setShowKey(true)
-        toast.toast({ title: 'API key generated successfully' })
+        toast.push({ title: 'API key generated successfully' })
         setKeyInfo({ hasKey: true, name: 'Default API Key', isActive: true, createdAt: new Date().toISOString() })
       } else {
-        toast.toast({ title: data.error || 'Failed to generate API key' })
+        toast.push({ title: data.error || 'Failed to generate API key' })
       }
     } catch (error) {
-      toast.toast({ title: 'Failed to generate API key' })
+      toast.push({ title: 'Failed to generate API key' })
     }
     setLoading(false)
   }
@@ -73,16 +73,16 @@ export function ApiKeyModal({ isOpen, onClose }: ApiKeyModalProps) {
       const response = await fetch('/api/api-keys', { method: 'DELETE' })
       
       if (response.ok) {
-        toast.toast({ title: 'API key deleted successfully' })
+        toast.push({ title: 'API key deleted successfully' })
         setKeyInfo({ hasKey: false })
         setNewApiKey('')
         setShowKey(false)
       } else {
         const data = await response.json()
-        toast.toast({ title: data.error || 'Failed to delete API key' })
+        toast.push({ title: data.error || 'Failed to delete API key' })
       }
     } catch (error) {
-      toast.toast({ title: 'Failed to delete API key' })
+      toast.push({ title: 'Failed to delete API key' })
     }
     setLoading(false)
   }
@@ -90,9 +90,9 @@ export function ApiKeyModal({ isOpen, onClose }: ApiKeyModalProps) {
   const copyToClipboard = async (text: string) => {
     try {
       await navigator.clipboard.writeText(text)
-      toast.toast({ title: 'Copied to clipboard' })
+      toast.push({ title: 'Copied to clipboard' })
     } catch (error) {
-      toast.toast({ title: 'Failed to copy to clipboard' })
+      toast.push({ title: 'Failed to copy to clipboard' })
     }
   }
 

@@ -3,6 +3,7 @@ import '@/styles/globals.css'
 import { ToasterProvider } from '@/components/ui/toaster'
 import { ClerkProvider } from '@clerk/nextjs'
 import { Header } from '@/components/ui/header'
+import { BrandProvider } from '@/components/providers/brand-provider'
 
 export const metadata: Metadata = {
   title: 'Store Locator',
@@ -18,10 +19,12 @@ export default function RootLayout({
     <ClerkProvider>
       <html lang="en">
         <body>
-          <ToasterProvider>
-            <Header />
-            {children}
-          </ToasterProvider>
+          <BrandProvider>
+            <ToasterProvider>
+              <Header />
+              {children}
+            </ToasterProvider>
+          </BrandProvider>
         </body>
       </html>
     </ClerkProvider>
