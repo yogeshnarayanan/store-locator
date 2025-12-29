@@ -1,7 +1,12 @@
 'use client'
 import * as React from 'react'
 
-type Toast = { id: number; title: string }
+type Toast = {
+  id: number
+  title?: string
+  message?: string
+  type?: 'success' | 'error' | 'info'
+}
 const Ctx = React.createContext<{
   toasts: Toast[]
   push: (t: Omit<Toast, 'id'>) => void
@@ -18,14 +23,22 @@ export function ToasterProvider({ children }: { children: React.ReactNode }) {
     <Ctx.Provider value={{ toasts, push }}>
       {children}
       <div className="fixed top-4 right-4 space-y-2 z-50">
-        {toasts.map(t => (
-          <div
-            key={t.id}
-            className="rounded-xl bg-black text-white px-4 py-2 text-sm shadow"
-          >
-            {t.title}
-          </div>
-        ))}
+        {toasts.map(t => {
+          const bgColor = t.type === 'success'
+            ? 'bg-green-600'
+            : t.type === 'error'
+            ? 'bg-red-600'
+            : 'bg-black'
+          const text = t.message || t.title || ''
+          return (
+            <div
+              key={t.id}
+              className={`rounded-xl text-white px-4 py-2 text-sm shadow ${bgColor}`}
+            >
+              {text}
+            </div>
+          )
+        })}
       </div>
     </Ctx.Provider>
   )
@@ -34,5 +47,5 @@ export function ToasterProvider({ children }: { children: React.ReactNode }) {
 export function useToast() {
   const ctx = React.useContext(Ctx)
   if (!ctx) throw new Error('useToast must be used within ToasterProvider')
-  return { toast: ctx.push }
+  return { push: ctx.push }
 }
